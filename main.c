@@ -27,7 +27,7 @@
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(int percent)
 {
-  return percent*1023/100;
+  return percent*10;
 }
 
 int main(void)
@@ -48,10 +48,10 @@ int main(void)
     while (1)
     {
       for(int i=0;i<100;i++)
-	//loop over 0-100 % in 60 seconds
+	//loop over 0-100 % in 10 seconds
 	{
-	  _delay_ms(600);
-	  // wait 600 ms
+	  _delay_ms(100);
+	  // wait (ms)
 	  OCR1A = calculateOCR1Apercent(i);
 	  // set PWM for i (%) duty cycle @ 10bit
 	}
