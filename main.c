@@ -22,6 +22,7 @@
 // @ 16Mhz Clock
 
 #include <avr/io.h>
+#include <util/delay.h>
 
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(int percent)
@@ -33,9 +34,6 @@ int main(void)
 {
     DDRB |= (1 << DDB1);
     // PB1 is now an output
-
-    OCR1A = calculateOCR1Apercent(1);
-    // set PWM for 1% duty cycle @ 10bit
 
     TCCR1A |= (1 << COM1A1);
     // set none-inverting mode
@@ -49,6 +47,13 @@ int main(void)
 
     while (1)
     {
-        // we have a working Fast PWM
+      for(int i=0;i<100;i++)
+	//loop over 0-100 % in 60 seconds
+	{
+	  _delay_ms(600);
+	  // wait 600 ms
+	  OCR1A = calculateOCR1Apercent(i);
+	  // set PWM for i (%) duty cycle @ 10bit
+	}
     }
 }
