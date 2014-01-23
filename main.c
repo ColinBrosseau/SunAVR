@@ -16,20 +16,26 @@
 //Solved bugs:
 //Done improvements
 
-#define Version "0.0.1" //firmware version
+#define Version "0.0.2" //firmware version
 
 // this code sets up counter1 for an 4kHz, 10bit, Phase Corrected PWM 
 // @ 16Mhz Clock
 
 #include <avr/io.h>
 
+// Calculate OCR1A value given a duty cycle (percent) 
+int calculateOCR1Apercent(int percent)
+{
+  return percent*1023/100;
+}
+
 int main(void)
 {
     DDRB |= (1 << DDB1);
     // PB1 is now an output
 
-    OCR1A = 0x0080;
-    // set PWM for 12.5% duty cycle @ 10bit
+    OCR1A = calculateOCR1Apercent(1);
+    // set PWM for 1% duty cycle @ 10bit
 
     TCCR1A |= (1 << COM1A1);
     // set none-inverting mode
