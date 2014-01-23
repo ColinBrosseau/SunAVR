@@ -30,22 +30,26 @@ int calculateOCR1Apercent(int percent)
   return percent*10;
 }
 
+void setIO(void)
+{
+  DDRB |= (1 << DDB1);
+  // PB1 is now an output
+  
+  TCCR1A |= (1 << COM1A1);
+  // set none-inverting mode
+  
+  TCCR1A |= (1 << WGM11) | (1 << WGM10);
+  // set 10bit phase corrected PWM Mode
+  
+  TCCR1B |= (1 << CS11);
+  // set prescaler to 8 and starts PWM
+}
+
 int main(void)
 {
-    DDRB |= (1 << DDB1);
-    // PB1 is now an output
-
-    TCCR1A |= (1 << COM1A1);
-    // set none-inverting mode
-
-    TCCR1A |= (1 << WGM11) | (1 << WGM10);
-    // set 10bit phase corrected PWM Mode
-
-    TCCR1B |= (1 << CS11);
-    // set prescaler to 8 and starts PWM
-
-
-    while (1)
+  setIO();
+  
+  while (1)
     {
       for(int i=0;i<100;i++)
 	//loop over 0-100 % in 10 seconds
