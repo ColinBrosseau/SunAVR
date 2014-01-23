@@ -1,0 +1,157 @@
+(Arduino)	mega8
+               -------
+Reset PC6     -|1  28|- PC5 ADC5
+(D0) RX PD0   -|2  27|- PC4 ADC4
+(D1) TX PD1   -|3  26|- PC3 ADC3
+(D2) INT0 PD2 -|4  25|- PC2 ADC2
+(D3) INT1 PD3 -|5  24|- PC1 ADC1
+(D4) PD4      -|6  23|- PC0 ADC0
+VCC 	      -|7  22|- GND
+GND 	      -|8  21|- Anolog Ref
+XTAL1 PB6     -|9  20|- VCC
+XTAL2 PB7     -|10 19|- PB5 SCK (D13)
+(D5) PD5      -|11 18|- PB4 MISO (D12)
+(D6) PD6      -|12 17|- PB3 MOSI (D11)
+(D7) PD7      -|13 16|- PB2 SS (D10)
+(D8) PB0      -|14 15|- PB1 (D9)
+     	       -------
+
+	       
+	       
+	         mega16/32
+                 -------
+(XCK/T0)    PB0 -|1  40|- PA0 (ADC0)
+(T1) 	    PB1 -|2  39|- PA1 (ADC1)
+(INT2/AIN0) PB2	-|3  38|- PA2 (ADC2)
+(OC0/AIN1)  PB3 -|4  37|- PA3 (ADC3)
+(SS)        PB4 -|5  36|- PA4 (ADC4)
+(MOSI)      PB5 -|6  35|- PA5 (ADC5)
+(MISO) 	    PB6 -|7  34|- PA6 (ADC6)
+(SCK) 	    PB7 -|8  33|- PA7 (ADC7)
+          Reset -|9  32|- AREF
+            VCC -|10 31|- GND
+	    GND -|11 30|- AVCC
+	  XTAL1	-|12 29|- PC7 (TOSC2)
+	  XTAL2	-|13 28|- PC6 (TOSC1)
+(RXD)       PD0 -|14 27|- PC5 (TDI)
+(TXD) 	    PD1 -|15 26|- PC4 (TDO)
+(INT0) 	    PD2 -|16 25|- PC3 (TMS)
+(INT1) 	    PD3 -|17 24|- PC2 (TCK)
+(OC1B) 	    PD4 -|18 23|- PC1 (SDA)
+(OC1A) 	    PD5 -|19 22|- PC0 (SCL)
+(ICP1) 	    PD6 -|20 21|- PD7 (OC2)
+                 -------
+ADC0 a ADC7 :  ADC Channel 0-7
+AIN0,AIN1 : Analog Comparator Positive I/P
+AREF : Analog Reference Pin for ADC
+AVCC : Voltage Supply = Vcc for ADC
+GND : 
+ICP1 : Timer/Counter1 Input Capture Pin
+INT0,INT1,INT2 : External Interrupt 0-2 Input
+MISO : In System Programmer (ISP), Serial Peripheral Interface (SPI)
+MOSI : In System Programmer (ISP), Serial Peripheral Interface (SPI)
+OC0 : Timer0 Output Compare Match Output
+OC1A,OC1B : PWM Channel Outputs
+OC2 : Timer/Counter2 Output Compare Match Output
+SCL : TWI Interface (I2C)
+SDA : TWI Interface (I2C)
+Reset : Active Low Reset
+RXD : USART Serial Communication Interface
+SCK : In System Programmer (ISP), Serial Peripheral Interface (SPI)
+SS : In System Programmer (ISP), Serial Peripheral Interface (SPI)
+T0, T1 : Timer0-1 External Counter Input
+TCK : JTAG Interface
+TDI : JTAG Interface
+TDO : JTAG Interface
+TMS : JTAG Interface
+TOSC1,TOSC2 : Timer Oscillator Pin 1-2
+TXD : USART Serial Communication Interface
+VCC : 
+XCK : USART External Clock I/O
+XTAL1,XTAL2 : Input/Output to Inverting Oscillator Amplifier
+
+Expect TWI devices to be compatible to I²C devices except for some particularities like general broadcast or 10 bit addressing.
+
+
+LCD
+Hitachi HD44780
+
+1   VSS - Ground
+2   VCC - (+5V)
+3   VE - Contrast adjustment
+4   RS - Register Select
+5   RW - Read/Write
+6   EN - Clock (Enable)
+7   D0 - Data Bit 0
+8   D1 - Data Bit 1
+9   D2 - Data Bit 2
+10  D3 - Data Bit 3
+11  D4 - Data Bit 4
+12  D5 - Data Bit 5
+13  D6 - Data Bit 6
+14  D7 - Data Bit 7
+15  BLA - Backlight Anode (+)
+16  BLK - Backlight Cathode (-)
+
+
+Timer1
+mega8 p.99
+mega16 p.113
+
+Timer/Counter 1 Control Register B – TCCR1B
+CS12 CS11 CS10 Description
+0    0 	  0    No clock source. (Timer/Counter stopped)
+0    0 	  1    clkIO/1 (No prescaling)
+0    1 	  0    clkIO/8 (From prescaler)
+0    1 	  1    clkIO/64 (From prescaler)
+1    0 	  0    clkIO/256 (From prescaler)
+1    0 	  1    clkIO/1024 (From prescaler)
+1    1 	  0    External clock source on T1 pin. Clock on falling edge
+1    1 	  1    External clock source on T1 pin. Clock on rising edge
+
+CTC timer calculation
+(Mode 4, CTC on OCR1A)
+
+Period (s) = Prescaler / clkIO * OCR1A
+
+clkIO is microcontroller cristal frequency (Hz)
+Prescaler is given by previous table
+
+---
+
+ADC Multiplexer pin Selection Register
+ 	7 bit 	6 bit 	5 bit 	4 bit 	3 bit 	2 bit 	1 bit 	0 bit 
+ADMUX	REFS1	REFS0 	ADLAR 	- 	MUX3 	MUX2 	MUX1 	MUX0 
+
+MUX3    MUX2    MUX1    MUX0    Pin that will be read
+0        0       0       0        PORTC0    Analogic0
+0        0       0       1        PORTC1    Analogic1
+0        0       1       0        PORTC2    Analogic2
+0        0       1       1        PORTC3    Analogic3
+0        1       0       0        PORTC4    Analogic4
+0        1       0       1        PORTC5    Analogic5
+
+     REFS1	REFS0 	Voltage Reference Selection 
+     0		0 	AREF, Internal Vref turned off 
+     0		1 	AVcc with external capacitor on AREF pin 
+     1		0 	Reserved 
+     1		1 	Internal 1.1V (ATmega168/328) or  2.56V on (ATmega8)
+
+---
+ADC Clock divider
+ADC Control and Status Register A
+    	7 bit	6 bit 	5 bit 	4 bit 	3 bit 	2 bit 	1 bit 	0 bit 
+ADCSRA	ADEN 	ADSC 	ADFR* 	ADIF 	ADIE 	ADPS2 	ADPS1 	ADPS0 
+
+     ADPS2	ADPS1 	ADPS0 	Division Factor 
+     0		0	0	2 
+     0		0	1	2 
+     0		1	0	4 
+     0		1	1	8 
+     1		0	0	16 
+     1		0	1	32 
+     1		1	0	64 
+     1		1	1	128 
+
+
+
