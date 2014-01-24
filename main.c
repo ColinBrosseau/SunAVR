@@ -25,18 +25,25 @@
 #include <util/delay.h>
 
 #define orderExponential 15 //nomber of terms to calculate en exponential (-1)
-#define maxXexponential 7 // max x-axis value for calculation of en exponential
+#define maxXexponential 3 // max x-axis value for calculation of en exponential
+  // 5 means there is a ratio of ~1:100 between the minimum value and the maximum value
   // 7 means there is a ratio of 1:1 000 between the minimum value and the maximum value
   // 9 means there is a ratio of ~1:10 000 between the minimum value and the maximum value
 #define numberSteps 1000 // Number of steps for the complete sequence
 #define totalTime 20 // total time of a complete sequence (seconds)
 #define waitTime 20 // == totalTime*1000/numberSteps (in ms)
+#define LED PB5
+
+// Some macros that make the code more readable
+#define output_low(port,pin) port &= ~(1<<pin)
+#define output_high(port,pin) port |= (1<<pin)
+#define set_input(portdir,pin) portdir &= ~(1<<pin)
+#define set_output(portdir,pin) portdir |= (1<<pin)
 
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(float intensity)
 {
-  int out = intensity*1023;
-  return out;
+  return (int)(intensity*1023);
 }
 
 void setIO(void)
@@ -80,21 +87,65 @@ void wait(int ms)
     }
 }
 
+
+void blink(int n)
+{
+  for (int j=0; j<n; j++)
+    {
+      // now turn ON the LED for 200ms
+      output_high(PORTB, LED);
+      _delay_ms(200);
+      // now turn off the LED for another 200ms
+      output_low(PORTB, LED);
+      _delay_ms(200);
+    }
+}
+
 int main(void)
 {
   setIO();
   
   float intensity;
+  
+  set_output(DDRB, LED);
 
+  float maxx;
+  
   while (1)
     {
-      for (float x=0; x<maxXexponential; x += (float)maxXexponential/(float)numberSteps)
-	{
-	  wait(waitTime); // wait
-	  intensity = expo(x)/expo(maxXexponential); // calculate the relative intensity
-	  //intensity = .1;
-	  OCR1A = calculateOCR1Apercent(intensity);
-	  // set PWM at intensity (relative intensity) @ 10bit
-	}
+      for (maxx=5; maxx<12; maxx++){
+	_delay_ms(1000);
+	blink(maxx);
+	//	for (float x=0; x<maxXexponential; x += (float)maxXexponential/(float)numberSteps)
+	for (float x=2+maxx-5; x<maxx; x += (-2+5)/(float)numberSteps)
+	  {
+	    wait(waitTime); // wait
+	    intensity = expo(x)/expo(maxx); // calculate the relative intensity
+	    //	    intensity = expo(x)/expo(maxXexponential); // calculate the relative intensity
+	    OCR1A = calculateOCR1Apercent(intensity);
+	    // set PWM at intensity (relative intensity) @ 10bit
+	  }
+	OCR1A = 0;
+	_delay_ms(1000);
+	_delay_ms(1000);
+	_delay_ms(1000);
+
+      /* for (maxx=1; maxx<10; maxx++){ */
+      /* 	_delay_ms(1000); */
+      /* 	blink(maxx); */
+      /* 	//	for (float x=0; x<maxXexponential; x += (float)maxXexponential/(float)numberSteps) */
+      /* 	for (float x=0; x<maxx; x += (float)maxx/(float)numberSteps) */
+      /* 	  { */
+      /* 	    wait(waitTime); // wait */
+      /* 	    intensity = expo(x)/expo(maxx); // calculate the relative intensity */
+      /* 	    //	    intensity = expo(x)/expo(maxXexponential); // calculate the relative intensity */
+      /* 	    OCR1A = calculateOCR1Apercent(intensity); */
+      /* 	    // set PWM at intensity (relative intensity) @ 10bit */
+      /* 	  } */
+      /* 	OCR1A = 0; */
+      /* 	_delay_ms(1000); */
+      /* 	_delay_ms(1000); */
+      /* 	_delay_ms(1000); */
+      }
     }
 }
