@@ -110,14 +110,66 @@ int main(void)
   set_output(DDRB, LED);
 
   float maxx;
+  float minx;
+  float x;
   
   while (1)
     {
-      for (maxx=5; maxx<12; maxx++){
+      //for (maxx=5; maxx<12; maxx++){
+	//	for (float x=0; x<maxXexponential; x += (float)maxXexponential/(float)numberSteps)
+	/* for (float x=2+maxx-5; x<maxx; x += (-2+5)/(float)numberSteps) */
+	/*   { */
+	/*     wait(waitTime); // wait */
+	/*     intensity = expo(x)/expo(maxx); // calculate the relative intensity */
+	/*     //	    intensity = expo(x)/expo(maxXexponential); // calculate the relative intensity */
+	/*     OCR1A = calculateOCR1Apercent(intensity); */
+	/*     // set PWM at intensity (relative intensity) @ 10bit */
+	/*   } */
+	/* OCR1A = 0; */
+	/* _delay_ms(1000); */
+	/* _delay_ms(1000); */
+	/* _delay_ms(1000); */
+      // }
+
+	maxx = 5;
+	minx = 3.3;
 	_delay_ms(1000);
 	blink(maxx);
-	//	for (float x=0; x<maxXexponential; x += (float)maxXexponential/(float)numberSteps)
-	for (float x=2+maxx-5; x<maxx; x += (-2+5)/(float)numberSteps)
+	for (float x=minx; x<maxx; x += (maxx-minx)/(float)numberSteps)
+	  {
+	    wait(waitTime); // wait
+	    intensity = expo(x)/expo(maxx); // calculate the relative intensity
+	    //	    intensity = expo(x)/expo(maxXexponential); // calculate the relative intensity
+	    OCR1A = calculateOCR1Apercent(intensity);
+	    // set PWM at intensity (relative intensity) @ 10bit
+	  }
+	OCR1A = 0;
+	_delay_ms(1000);
+	_delay_ms(1000);
+	_delay_ms(1000);
+
+	maxx = 8;
+	minx = 4.5;
+	_delay_ms(1000);
+	blink(maxx);
+	for (float x=minx; x<maxx; x += (maxx-minx)/(float)numberSteps)
+	  {
+	    wait(waitTime); // wait
+	    intensity = expo(x)/expo(maxx); // calculate the relative intensity
+	    //	    intensity = expo(x)/expo(maxXexponential); // calculate the relative intensity
+	    OCR1A = calculateOCR1Apercent(intensity);
+	    // set PWM at intensity (relative intensity) @ 10bit
+	  }
+	OCR1A = 0;
+	_delay_ms(1000);
+	_delay_ms(1000);
+	_delay_ms(1000);
+
+	maxx = 11;
+	minx = 6;
+	_delay_ms(1000);
+	blink(maxx);
+	for (float x=minx; x<maxx; x += (maxx-minx)/(float)numberSteps)
 	  {
 	    wait(waitTime); // wait
 	    intensity = expo(x)/expo(maxx); // calculate the relative intensity
@@ -146,6 +198,5 @@ int main(void)
       /* 	_delay_ms(1000); */
       /* 	_delay_ms(1000); */
       /* 	_delay_ms(1000); */
-      }
     }
 }
