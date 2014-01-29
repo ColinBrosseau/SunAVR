@@ -33,6 +33,7 @@
 #define totalTime 30 // total time of a complete sequence (minutes)
 #define waitTime 178 // == totalTime*60*1000/numberSteps -2 (in ms) : 30-2->5minutes, 180-2->30 minutes
 #define LED PB5
+#define LIGHT PB1
 // With 10000 steps and a waiting time of 6 ms it takes about 80 seconds (supposed to be 60 without calculations) to cycle.
 // So about 2 ms of calculations per step (orderExponential=15).
 
@@ -103,11 +104,16 @@ void blink(int n)
     }
 }
 
-void waitMinute(void)
+void blinkLIGHT(int n)
 {
-  for (int j=0; j<60; j++)
+  for (int j=0; j<n; j++)
     {
-      _delay_ms(1000);
+      // now turn ON the LED for 200ms
+      output_high(PORTB, LIGHT);
+      _delay_ms(200);
+      // now turn off the LED for another 200ms
+      output_low(PORTB, LIGHT);
+      _delay_ms(200);
     }
 }
 
@@ -115,15 +121,10 @@ void waitMinutes(int toWait)
 {
   for (int j=0; j<toWait; j++)
     {
-      waitMinute();
-    }
-}
-
-void waitHour(void)
-{
-  for (int j=0; j<60; j++)
-    {
-      waitMinute();
+      for (int j=0; j<60; j++)
+	{
+	  _delay_ms(1000);
+	}
     }
 }
 
@@ -131,12 +132,13 @@ void waitHours(int toWait)
 {
   for (int j=0; j<toWait; j++)
     {
-      waitHour();
+      waitMinutes(60);
     }
 }
 
 int main(void)
 {
+  blinkLIGHT(20);
   setIO();
   
   float intensity;
@@ -144,14 +146,14 @@ int main(void)
   set_output(DDRB, LED);
 
   blink(20);
-  waitHours(7);
-  waitMinutes(30);
+  waitHours(0);
+  waitMinutes(450);
 
   float maxx;
   float minx;
 
   maxx = 11;
-  minx = 6.8;
+  minx = 6.4;
   blink(maxx);
   for (float x=minx; x<maxx; x += (maxx-minx)/(float)numberSteps)
     {
