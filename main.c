@@ -34,6 +34,9 @@
 #define waitTime 178 // == totalTime*60*1000/numberSteps -2 (in ms) : 30-2->5minutes, 180-2->30 minutes
 #define LED PB5
 #define LIGHT PB1
+#define PORT_LED PORTB
+#define PORT_LIGHT PORTB
+#define delay_blink 250
 // With 10000 steps and a waiting time of 6 ms it takes about 80 seconds (supposed to be 60 without calculations) to cycle.
 // So about 2 ms of calculations per step (orderExponential=15).
 
@@ -59,6 +62,8 @@ void setIO(void)
   // set 10bit phase corrected PWM Mode
   TCCR1B |= (1 << CS11);
   // set prescaler to 8 and starts PWM
+
+  set_output(DDRB, LED);
 }
 
 float expo(float x)
@@ -95,12 +100,12 @@ void blink(int n)
 {
   for (int j=0; j<n; j++)
     {
-      // now turn ON the LED for 200ms
-      output_high(PORTB, LED);
-      _delay_ms(200);
-      // now turn off the LED for another 200ms
-      output_low(PORTB, LED);
-      _delay_ms(200);
+      // now turn ON the LED
+      output_high(PORT_LED, LED);
+      _delay_ms(delay_blink); // wait
+      // now turn off the LED
+      output_low(PORT_LED, LED);
+      _delay_ms(delay_blink); // wait
     }
 }
 
@@ -108,12 +113,12 @@ void blinkLIGHT(int n)
 {
   for (int j=0; j<n; j++)
     {
-      // now turn ON the LED for 200ms
-      output_high(PORTB, LIGHT);
-      _delay_ms(200);
-      // now turn off the LED for another 200ms
-      output_low(PORTB, LIGHT);
-      _delay_ms(200);
+      // now turn ON the LIGHT
+      output_high(PORT_LIGHT, LIGHT);
+      _delay_ms(delay_blink); // wait
+      // now turn off the LIGHT
+      output_low(PORT_LIGHT, LIGHT);
+      _delay_ms(delay_blink); // wait
     }
 }
 
@@ -143,15 +148,12 @@ int main(void)
   
   float intensity;
   
-  set_output(DDRB, LED);
-
   blink(20);
-  waitHours(0);
-  waitMinutes(450);
+  waitHours(9);
+  waitMinutes(50);
 
   float maxx;
   float minx;
-
   maxx = 11;
   minx = 6.4;
   blink(maxx);
