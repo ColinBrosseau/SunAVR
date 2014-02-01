@@ -23,6 +23,7 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include "utility.h"
 
 #define orderExponential 15 //nomber of terms to calculate en exponential (-1)
 #define maxXexponential 3 // max x-axis value for calculation of en exponential
@@ -32,19 +33,13 @@
 #define numberSteps 10000 // Number of steps for the complete sequence
 #define totalTime 30 // total time of a complete sequence (minutes)
 #define waitTime 178 // == totalTime*60*1000/numberSteps -2 (in ms) : 30-2->5minutes, 180-2->30 minutes
-#define LED PB5
-#define LIGHT PB1
-#define PORT_LED PORTB
-#define PORT_LIGHT PORTB
-#define delay_blink 250
 // With 10000 steps and a waiting time of 6 ms it takes about 80 seconds (supposed to be 60 without calculations) to cycle.
 // So about 2 ms of calculations per step (orderExponential=15).
 
-// Some macros that make the code more readable
-#define output_low(port,pin) port &= ~(1<<pin)
-#define output_high(port,pin) port |= (1<<pin)
-#define set_input(portdir,pin) portdir &= ~(1<<pin)
-#define set_output(portdir,pin) portdir |= (1<<pin)
+MAKE_OUTPUT(LED, B, 5, 1)
+MAKE_OUTPUT(LIGHT, B, 1, 1)
+
+#define delay_blink 250
 
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(float intensity)
@@ -63,7 +58,7 @@ void setIO(void)
   TCCR1B |= (1 << CS11);
   // set prescaler to 8 and starts PWM
 
-  set_output(DDRB, LED);
+  INIT_LED();
 }
 
 float expo(float x)
@@ -101,10 +96,10 @@ void blink(int n)
   for (int j=0; j<n; j++)
     {
       // now turn ON the LED
-      output_high(PORT_LED, LED);
+      LED(1);
       _delay_ms(delay_blink); // wait
       // now turn off the LED
-      output_low(PORT_LED, LED);
+      LED(0);
       _delay_ms(delay_blink); // wait
     }
 }
@@ -114,10 +109,10 @@ void blinkLIGHT(int n)
   for (int j=0; j<n; j++)
     {
       // now turn ON the LIGHT
-      output_high(PORT_LIGHT, LIGHT);
+      LIGHT(1);
       _delay_ms(delay_blink); // wait
       // now turn off the LIGHT
-      output_low(PORT_LIGHT, LIGHT);
+      LIGHT(0);
       _delay_ms(delay_blink); // wait
     }
 }
@@ -155,7 +150,7 @@ int main(void)
   float maxx;
   float minx;
   maxx = 11;
-  minx = 6.4;
+  minx = 6.8;
   blink(maxx);
   for (float x=minx; x<maxx; x += (maxx-minx)/(float)numberSteps)
     {
