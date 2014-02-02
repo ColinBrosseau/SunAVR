@@ -16,14 +16,17 @@
 //Solved bugs:
 //Done improvements
 
-#define Version "0.1.0" //firmware version
+#define Version "0.1.2" //firmware version
 
 // this code sets up counter1 for an 4kHz, 10bit, Phase Corrected PWM 
 // @ 16Mhz Clock
 
 #include <avr/io.h>
 #include <util/delay.h>
-#include "utility.h"
+#include "utility.h" // macro for simplification of pin manipulations
+#include "i2cmaster.h" // for the ds1307 clock
+#include "clock.h" // for the ds1307 clock
+
 
 #define orderExponential 15 //nomber of terms to calculate en exponential (-1)
 #define maxXexponential 3 // max x-axis value for calculation of en exponential
@@ -32,14 +35,22 @@
   // 9 means there is a ratio of ~1:10 000 between the minimum value and the maximum value
 #define numberSteps 10000 // Number of steps for the complete sequence
 #define totalTime 30 // total time of a complete sequence (minutes)
-#define waitTime 178 // == totalTime*60*1000/numberSteps -2 (in ms) : 30-2->5minutes, 180-2->30 minutes
+#define waitTime 4 // == totalTime*60*1000/numberSteps -2 (in ms) : 30-2->5minutes, 180-2->30 minutes
 // With 10000 steps and a waiting time of 6 ms it takes about 80 seconds (supposed to be 60 without calculations) to cycle.
 // So about 2 ms of calculations per step (orderExponential=15).
 
-MAKE_OUTPUT(LED, B, 5, 1)
-MAKE_OUTPUT(LIGHT, B, 1, 1)
+MAKE_OUTPUT(LED, B, 5, 1) // LED indicator
+MAKE_OUTPUT(LIGHT, B, 1, 1) // PWM (actual light)
+
+MAKE_OUTPUT(GND_CLOCK, C, 2, 1) // power of the clock
+MAKE_OUTPUT(VCC_CLOCK, C, 3, 1) // power of the clock
 
 #define delay_blink 250
+
+// Current time
+TimeVal curTime;
+// Alarm time
+TimeVal alarmTime;
 
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(float intensity)
@@ -138,20 +149,44 @@ void waitHours(int toWait)
 
 int main(void)
 {
-  blinkLIGHT(20);
+  blinkLIGHT(5);
   setIO();
-  
+  blink(5);
+
+  // set clock alimentation (thru uC pins)
+  INIT_GND_CLOCK();
+  GND_CLOCK(0);
+  INIT_VCC_CLOCK();
+  VCC_CLOCK(1);
+
+  // Initialize I2C library
+  i2c_init();
+
   float intensity;
+
+  //a test alarm time
+  alarmTime.sec = 0;
+  alarmTime.min = 0;
+  alarmTime.hour = 19;
+  alarmTime.date = 1;
+  alarmTime.month = 2;
+  alarmTime.year = 2014;
+
+  getTime(&curTime);
+
+  // wait until the alarm time
+  while (cmpTime(&curTime, &alarmTime) < 0)
+    {
+       _delay_ms(1000);
+       getTime(&curTime);
+    }
   
-  blink(20);
-  waitHours(9);
-  waitMinutes(50);
+  blink(5);
 
   float maxx;
   float minx;
   maxx = 11;
-  minx = 6.8;
-  blink(maxx);
+  minx = 6.4;
   for (float x=minx; x<maxx; x += (maxx-minx)/(float)numberSteps)
     {
       wait(waitTime); // wait
