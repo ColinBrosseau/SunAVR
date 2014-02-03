@@ -35,7 +35,9 @@
   // 9 means there is a ratio of ~1:10 000 between the minimum value and the maximum value
 #define numberSteps 10000 // Number of steps for the complete sequence
 #define totalTime 30 // total time of a complete sequence (minutes)
-#define waitTime 4 // == totalTime*60*1000/numberSteps -2 (in ms) : 30-2->5minutes, 180-2->30 minutes
+#define waitTime 178 // == totalTime*60*1000/numberSteps -2 (in ms) : 
+//         30-2->5minutes, 
+//         180-2->30 minutes
 // With 10000 steps and a waiting time of 6 ms it takes about 80 seconds (supposed to be 60 without calculations) to cycle.
 // So about 2 ms of calculations per step (orderExponential=15).
 
@@ -50,7 +52,8 @@ MAKE_OUTPUT(VCC_CLOCK, C, 3, 1) // power of the clock
 // Current time
 TimeVal curTime;
 // Alarm time
-TimeVal alarmTime;
+TimeVal alarmTime1;
+TimeVal alarmTime2;
 
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(float intensity)
@@ -147,6 +150,13 @@ void waitHours(int toWait)
     }
 }
 
+int waitAlarm(TimeVal* ptr_alarmTime)
+//return 1 if alarmTime = curTime (we have to wait)
+//       0 if alarmTime != curTime
+{
+  return cmpTimeHM(&curTime, ptr_alarmTime) != 0;
+}
+
 int main(void)
 {
   blinkLIGHT(5);
@@ -164,18 +174,17 @@ int main(void)
 
   float intensity;
 
-  //a test alarm time
-  alarmTime.sec = 0;
-  alarmTime.min = 0;
-  alarmTime.hour = 19;
-  alarmTime.date = 1;
-  alarmTime.month = 2;
-  alarmTime.year = 2014;
+  //alarm time #1
+  alarmTime1.min = 5;
+  alarmTime1.hour = 20;
+  //alarm time #2
+  alarmTime2.min = 10;
+  alarmTime2.hour = 20;
 
   getTime(&curTime);
 
   // wait until the alarm time
-  while (cmpTime(&curTime, &alarmTime) < 0)
+  while ( waitAlarm(&alarmTime1) & waitAlarm(&alarmTime2) )
     {
        _delay_ms(1000);
        getTime(&curTime);

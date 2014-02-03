@@ -195,6 +195,21 @@ int cmpTime(TimeVal* tA, TimeVal* tB)
     return 0;
 }
 
+int cmpTimeHM(TimeVal* tA, TimeVal* tB)
+{
+    if (tA->hour < tB->hour)
+        return -1;
+    if (tA->hour > tB->hour)
+        return 1;
+
+    if (tA->min < tB->min)
+        return -1;
+    if (tA->min > tB->min)
+        return 1;
+
+    return 0;
+}
+
 void nextDate(TimeVal* time)
 {
     // If this is the last day of the current month
