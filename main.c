@@ -175,11 +175,11 @@ int main(void)
   float intensity;
 
   //alarm time #1
-  alarmTime1.min = 5;
-  alarmTime1.hour = 20;
+  alarmTime1.hour = 5;
+  alarmTime1.min = 0;
   //alarm time #2
-  alarmTime2.min = 10;
-  alarmTime2.hour = 20;
+  alarmTime2.hour = 8;
+  alarmTime2.min = 0;
 
   getTime(&curTime);
 
