@@ -15,7 +15,7 @@
 # MCU name
 MCU = atmega8   # adapt to uC type
 
-F_CPU = 16000000UL   # adapt to uC clock
+F_CPU = 12000000UL   # adapt to uC clock
 
 # Output format. (can be srec, ihex, binary)
 FORMAT = ihex

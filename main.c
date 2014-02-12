@@ -159,29 +159,39 @@ int waitAlarm(TimeVal* ptr_alarmTime)
 
 int main(void)
 {
-  blinkLIGHT(5);
-  setIO();
-  blink(5);
-
   // set clock alimentation (thru uC pins)
   INIT_GND_CLOCK();
   GND_CLOCK(0);
   INIT_VCC_CLOCK();
   VCC_CLOCK(1);
-
   // Initialize I2C library
   i2c_init();
 
   float intensity;
 
+  //SET TIME
+  /* curTime.year=2014; */
+  /* curTime.month=2; */
+  /* curTime.date=12; */
+  /* curTime.hour=12; */
+  /* curTime.min=54; */
+  /* curTime.sec=01; */
+  /* setTime(&curTime); */
+
   //alarm time #1
-  alarmTime1.hour = 5;
-  alarmTime1.min = 0;
+  alarmTime1.hour = 13;
+  alarmTime1.min = 48;
   //alarm time #2
-  alarmTime2.hour = 8;
-  alarmTime2.min = 0;
+  alarmTime2.hour = 13;
+  alarmTime2.min = 55;
 
   getTime(&curTime);
+  
+  //Check point (it will not shine if the clock is not available)
+  blinkLIGHT(curTime.hour);
+  blink(5);
+
+  setIO();
 
   // wait until the alarm time
   while ( waitAlarm(&alarmTime1) & waitAlarm(&alarmTime2) )
@@ -190,6 +200,8 @@ int main(void)
        getTime(&curTime);
     }
   
+  OCR1A = 1000;
+       _delay_ms(50);
   blink(5);
 
   float maxx;
