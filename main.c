@@ -26,7 +26,7 @@
 #include "utility.h" // macro for simplification of pin manipulations
 #include "i2cmaster.h" // for the ds1307 clock
 #include "clock.h" // for the ds1307 clock
-
+#include "lcd.h" // for LCD 
 
 #define orderExponential 15 //nomber of terms to calculate en exponential (-1)
 #define maxXexponential 3 // max x-axis value for calculation of en exponential
@@ -54,6 +54,8 @@ TimeVal curTime;
 // Alarm time
 TimeVal alarmTime1;
 TimeVal alarmTime2;
+
+char bufferLCD[3]; 
 
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(float intensity)
@@ -157,6 +159,14 @@ int waitAlarm(TimeVal* ptr_alarmTime)
   return cmpTimeHM(&curTime, ptr_alarmTime) != 0;
 }
 
+//initialise LCD display
+void initLCD(void) {
+  //LCD
+  lcd_init(LCD_DISP_ON); /* initialize display, cursor off */
+  lcd_clrscr(); /* clear display and home cursor */
+  lcd_puts("SunAVR ");
+}
+
 int main(void)
 {
   // set clock alimentation (thru uC pins)
@@ -166,6 +176,9 @@ int main(void)
   VCC_CLOCK(1);
   // Initialize I2C library
   i2c_init();
+
+  // Initialize the LCD
+  initLCD();
 
   float intensity;
 
@@ -179,16 +192,20 @@ int main(void)
   /* setTime(&curTime); */
 
   //alarm time #1
-  alarmTime1.hour = 13;
-  alarmTime1.min = 48;
+  alarmTime1.hour = 5;
+  alarmTime1.min = 0;
   //alarm time #2
-  alarmTime2.hour = 13;
-  alarmTime2.min = 55;
+  alarmTime2.hour = 8;
+  alarmTime2.min = 0;
 
   getTime(&curTime);
   
   //Check point (it will not shine if the clock is not available)
   blinkLIGHT(curTime.hour);
+  blink(5);
+  blinkLIGHT(alarmTime1.hour);
+  blink(5);
+  blinkLIGHT(alarmTime2.hour);
   blink(5);
 
   setIO();
@@ -198,6 +215,15 @@ int main(void)
     {
        _delay_ms(1000);
        getTime(&curTime);
+       lcd_gotoxy(0,0);
+       itoa(curTime.hour,bufferLCD,10); 
+       lcd_puts(bufferLCD);
+       lcd_puts(":");
+       itoa(curTime.min,bufferLCD,10); 
+       lcd_puts(bufferLCd);
+       lcd_puts(":");
+       itoa(curTime.sec,bufferLCD,10); 
+       lcd_puts(bufferLCD);
     }
   
   OCR1A = 1000;
