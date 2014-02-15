@@ -167,6 +167,32 @@ void initLCD(void) {
   lcd_puts("SunAVR ");
 }
 
+void printTime(TimeVal* time){
+  int hour = time->hour;
+  int min = time->min;
+  int sec = time->sec;
+  itoa(hour,bufferLCD,10); 
+  if (hour < 10)				
+    {
+      lcd_puts(" ");
+    }
+  lcd_puts(bufferLCD);
+  lcd_puts(":");
+  itoa(min,bufferLCD,10); 
+  if (min < 10)
+    {
+      lcd_puts("0");
+    }
+  lcd_puts(bufferLCD);
+  lcd_puts(":");
+  itoa(sec,bufferLCD,10); 
+  if (sec < 10)
+    {
+      lcd_puts("0");
+    }
+  lcd_puts(bufferLCD);
+}
+
 int main(void)
 {
   // set clock alimentation (thru uC pins)
@@ -216,14 +242,7 @@ int main(void)
        _delay_ms(1000);
        getTime(&curTime);
        lcd_gotoxy(0,0);
-       itoa(curTime.hour,bufferLCD,10); 
-       lcd_puts(bufferLCD);
-       lcd_puts(":");
-       itoa(curTime.min,bufferLCD,10); 
-       lcd_puts(bufferLCd);
-       lcd_puts(":");
-       itoa(curTime.sec,bufferLCD,10); 
-       lcd_puts(bufferLCD);
+       printTime(&curTime);
     }
   
   OCR1A = 1000;
