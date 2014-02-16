@@ -167,30 +167,41 @@ void initLCD(void) {
   lcd_puts("SunAVR ");
 }
 
-void printTime(TimeVal* time){
+void printTime(TimeVal* time, int level){
   int hour = time->hour;
   int min = time->min;
   int sec = time->sec;
-  itoa(hour,bufferLCD,10); 
-  if (hour < 10)				
+
+  if (level>=0)
     {
-      lcd_puts(" ");
+      itoa(hour,bufferLCD,10); 
+      if (hour < 10)				
+	{
+	  lcd_puts(" ");
+	}
+      lcd_puts(bufferLCD);
+      lcd_puts(":");
+      itoa(min,bufferLCD,10); 
+      if (min < 10)
+	{
+	  lcd_puts("0");
+	}
+      lcd_puts(bufferLCD);
     }
-  lcd_puts(bufferLCD);
-  lcd_puts(":");
-  itoa(min,bufferLCD,10); 
-  if (min < 10)
+
+  if (level>=2)
     {
-      lcd_puts("0");
+      lcd_puts(":");
+      itoa(sec,bufferLCD,10); 
+      if (sec < 10)
+	{
+	  lcd_puts("0");
+	}
+      lcd_puts(bufferLCD);
     }
-  lcd_puts(bufferLCD);
-  lcd_puts(":");
-  itoa(sec,bufferLCD,10); 
-  if (sec < 10)
-    {
-      lcd_puts("0");
-    }
-  lcd_puts(bufferLCD);
+
+  lcd_puts(" ");
+  
 }
 
 int main(void)
@@ -227,12 +238,7 @@ int main(void)
   getTime(&curTime);
   
   //Check point (it will not shine if the clock is not available)
-  blinkLIGHT(curTime.hour);
-  blink(5);
-  blinkLIGHT(alarmTime1.hour);
-  blink(5);
-  blinkLIGHT(alarmTime2.hour);
-  blink(5);
+  blinkLIGHT(2);
 
   setIO();
 
@@ -242,7 +248,11 @@ int main(void)
        _delay_ms(1000);
        getTime(&curTime);
        lcd_gotoxy(0,0);
-       printTime(&curTime);
+       printTime(&curTime, 0);
+
+       lcd_gotoxy(0,1);
+       printTime(&alarmTime1, 0);
+       printTime(&alarmTime2, 0);
     }
   
   OCR1A = 1000;
