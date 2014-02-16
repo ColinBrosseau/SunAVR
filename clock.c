@@ -62,13 +62,13 @@ const char* dayNames[] = {
 // Month names
 const char* monthNames[] = {
     "Jan",
-    "Feb",
+    "Fev",
     "Mar",
-    "Apr",
-    "May",
+    "Avr",
+    "Mai",
     "Jun",
-    "Jul",
-    "Aug",
+    "Jui",
+    "Aou",
     "Sep",
     "Oct",
     "Nov",

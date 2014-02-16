@@ -16,7 +16,7 @@
 //Solved bugs:
 //Done improvements
 
-#define Version "0.1.2" //firmware version
+#define Version "0.2.0" //firmware version
 
 // this code sets up counter1 for an 4kHz, 10bit, Phase Corrected PWM 
 // @ 16Mhz Clock
@@ -55,7 +55,7 @@ TimeVal curTime;
 TimeVal alarmTime1;
 TimeVal alarmTime2;
 
-char bufferLCD[3]; 
+char bufferLCD[5]; 
 
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(float intensity)
@@ -201,7 +201,22 @@ void printTime(TimeVal* time, int level){
     }
 
   lcd_puts(" ");
-  
+
+  if (level>=1)
+    {
+      int date = time->date;
+      //int month = time->month;
+      int year = time->year;
+      itoa(date,bufferLCD,10);
+      lcd_puts(bufferLCD);
+      lcd_puts(" ");
+      lcd_puts(getMonthStr(time));
+      lcd_puts(" ");
+      itoa(year,bufferLCD,10);
+      lcd_puts(bufferLCD);
+      lcd_puts(" ");
+    }
+
 }
 
 int main(void)
@@ -229,7 +244,7 @@ int main(void)
   /* setTime(&curTime); */
 
   //alarm time #1
-  alarmTime1.hour = 5;
+  alarmTime1.hour = 7;
   alarmTime1.min = 0;
   //alarm time #2
   alarmTime2.hour = 8;
@@ -248,7 +263,7 @@ int main(void)
        _delay_ms(1000);
        getTime(&curTime);
        lcd_gotoxy(0,0);
-       printTime(&curTime, 0);
+       printTime(&curTime, 1);
 
        lcd_gotoxy(0,1);
        printTime(&alarmTime1, 0);
