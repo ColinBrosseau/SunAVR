@@ -55,7 +55,7 @@ TimeVal curTime;
 TimeVal alarmTime1;
 TimeVal alarmTime2;
 
-char bufferLCD[5]; 
+char bufferLCD[6]; 
 
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(float intensity)
@@ -244,7 +244,7 @@ int main(void)
   /* setTime(&curTime); */
 
   //alarm time #1
-  alarmTime1.hour = 7;
+  alarmTime1.hour = 5;
   alarmTime1.min = 0;
   //alarm time #2
   alarmTime2.hour = 8;
@@ -270,9 +270,8 @@ int main(void)
        printTime(&alarmTime2, 0);
     }
   
-  OCR1A = 1000;
-       _delay_ms(50);
-  blink(5);
+  OCR1A = 50;
+  _delay_ms(50);
 
   float maxx;
   float minx;
@@ -280,14 +279,19 @@ int main(void)
   minx = 6.4;
   for (float x=minx; x<maxx; x += (maxx-minx)/(float)numberSteps)
     {
+
       wait(waitTime); // wait
       intensity = expo(x)/expo(maxx); // calculate the relative intensity
       //	    intensity = expo(x)/expo(maxXexponential); // calculate the relative intensity
       OCR1A = calculateOCR1Apercent(intensity);
       // set PWM at intensity (relative intensity) @ 10bit
     }
-  
+
   while (1)
     {
+      wait(300);
+      OCR1A = 0;
+      wait(300);
+      OCR1A = 1023;
     }
 }
