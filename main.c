@@ -30,22 +30,16 @@
 
 #define orderExponential 15 //nomber of terms to calculate en exponential (-1)
 #define maxXexponential 3 // max x-axis value for calculation of en exponential
+// About 2 ms of calculations per step (orderExponential=15).
   // 5 means there is a ratio of ~1:100 between the minimum value and the maximum value
   // 7 means there is a ratio of 1:1 000 between the minimum value and the maximum value
   // 9 means there is a ratio of ~1:10 000 between the minimum value and the maximum value
-#define numberSteps 10000 // Number of steps for the complete sequence
 #define totalTime 30 // total time of a complete sequence (minutes)
-#define waitTime 178 // == totalTime*60*1000/numberSteps -2 (in ms) : 
-//         30-2->5minutes, 
-//         180-2->30 minutes
-// With 10000 steps and a waiting time of 6 ms it takes about 80 seconds (supposed to be 60 without calculations) to cycle.
-// So about 2 ms of calculations per step (orderExponential=15).
 
-MAKE_OUTPUT(LED, B, 5, 1) // LED indicator
 MAKE_OUTPUT(LIGHT, B, 1, 1) // PWM (actual light)
 
-MAKE_OUTPUT(GND_CLOCK, C, 2, 1) // power of the clock
-MAKE_OUTPUT(VCC_CLOCK, C, 3, 1) // power of the clock
+//MAKE_OUTPUT(GND_CLOCK, C, 2, 1) // power of the clock
+//MAKE_OUTPUT(VCC_CLOCK, C, 3, 1) // power of the clock
 
 #define delay_blink 250
 
@@ -74,7 +68,7 @@ void setIO(void)
   TCCR1B |= (1 << CS11);
   // set prescaler to 8 and starts PWM
 
-  INIT_LED();
+  //INIT_LED();
 }
 
 float expo(float x)
@@ -92,33 +86,6 @@ float expo(float x)
   return out; 
 }
 
-void wait(int ms)
-// wait for specified number ms
-//it's a bit of a hack because _delay_ms cannot be more that ~6000 and must be defined af compile time
-{
-  if (ms<6000)
-    {
-      _delay_ms(waitTime);
-    }
-  else
-    {
-      _delay_ms(6000);
-    }
-}
-
-
-void blink(int n)
-{
-  for (int j=0; j<n; j++)
-    {
-      // now turn ON the LED
-      LED(1);
-      _delay_ms(delay_blink); // wait
-      // now turn off the LED
-      LED(0);
-      _delay_ms(delay_blink); // wait
-    }
-}
 
 void blinkLIGHT(int n)
 {
@@ -133,24 +100,6 @@ void blinkLIGHT(int n)
     }
 }
 
-void waitMinutes(int toWait)
-{
-  for (int j=0; j<toWait; j++)
-    {
-      for (int j=0; j<60; j++)
-	{
-	  _delay_ms(1000);
-	}
-    }
-}
-
-void waitHours(int toWait)
-{
-  for (int j=0; j<toWait; j++)
-    {
-      waitMinutes(60);
-    }
-}
 
 int waitAlarm(TimeVal* ptr_alarmTime)
 //return 1 if alarmTime = curTime (we have to wait)
@@ -159,6 +108,7 @@ int waitAlarm(TimeVal* ptr_alarmTime)
   return cmpTimeHM(&curTime, ptr_alarmTime) != 0;
 }
 
+
 //initialise LCD display
 void initLCD(void) {
   //LCD
@@ -166,6 +116,7 @@ void initLCD(void) {
   lcd_clrscr(); /* clear display and home cursor */
   lcd_puts("SunAVR ");
 }
+
 
 void printTime(TimeVal* time, int level){
   int hour = time->hour;
@@ -219,13 +170,9 @@ void printTime(TimeVal* time, int level){
 
 }
 
+
 int main(void)
 {
-  // set clock alimentation (thru uC pins)
-  INIT_GND_CLOCK();
-  GND_CLOCK(0);
-  INIT_VCC_CLOCK();
-  VCC_CLOCK(1);
   // Initialize I2C library
   i2c_init();
 
@@ -257,6 +204,8 @@ int main(void)
 
   setIO();
 
+  short alarmActive = 0;
+
   // wait until the alarm time
   while ( waitAlarm(&alarmTime1) & waitAlarm(&alarmTime2) )
     {
@@ -269,29 +218,87 @@ int main(void)
        printTime(&alarmTime1, 0);
        printTime(&alarmTime2, 0);
     }
+
+  alarmActive = 1;
   
   OCR1A = 50;
   _delay_ms(50);
+
+
+  unsigned int difference=0;
 
   float maxx;
   float minx;
   maxx = 11;
   minx = 6.4;
-  for (float x=minx; x<maxx; x += (maxx-minx)/(float)numberSteps)
-    {
 
-      wait(waitTime); // wait
-      intensity = expo(x)/expo(maxx); // calculate the relative intensity
-      //	    intensity = expo(x)/expo(maxXexponential); // calculate the relative intensity
-      OCR1A = calculateOCR1Apercent(intensity);
-      // set PWM at intensity (relative intensity) @ 10bit
+  float x;
+
+  while (alarmActive)
+    {
+      // Get the seconds value at the last iteration
+      uint8_t lastSec = curTime.sec;
+      
+      // Read the current time
+      getTime(&curTime);
+      
+      // Update the seconds count
+      if (curTime.sec != lastSec)
+	{
+	  difference++;
+	  
+	  lcd_gotoxy(0,0);
+	  printTime(&curTime, 1);
+	  
+	  lcd_gotoxy(0,1);
+	  printTime(&alarmTime1, 0);
+	  printTime(&alarmTime2, 0);
+
+	  x = minx + (maxx-minx)/(totalTime*60)*(float)difference;
+	  intensity = expo(x)/expo(maxx); // calculate the relative intensity
+	  
+	  /* lcd_gotoxy(0,0); */
+	  /* bufferLCD[0] = ' '; */
+	  /* bufferLCD[1] = ' '; */
+	  /* bufferLCD[2] = ' '; */
+	  /* bufferLCD[3] = ' '; */
+	  /* bufferLCD[4] = ' '; */
+	  /* bufferLCD[5] = '\0'; */
+	  itoa(difference,bufferLCD,10);
+	  lcd_puts(bufferLCD);
+	  lcd_puts(" ");
+	  
+	  /* lcd_gotoxy(0,1); */
+	  /* bufferLCD[0] = ' '; */
+	  /* bufferLCD[1] = ' '; */
+	  /* bufferLCD[2] = ' '; */
+	  /* bufferLCD[3] = ' '; */
+	  /* bufferLCD[4] = ' '; */
+	  /* bufferLCD[5] = '\0'; */
+	  /* itoa(calculateOCR1Apercent(intensity),bufferLCD,10); */
+	  /* lcd_puts(bufferLCD); */
+	  /* lcd_puts(" "); */
+	  
+	  OCR1A = calculateOCR1Apercent(intensity);
+	  // set PWM at intensity (relative intensity) @ 10bit
+	}
+
+      if (difference==(totalTime*60))
+	{
+	  alarmActive = 0;
+	}
     }
 
-  while (1)
+  while(1)
     {
-      wait(300);
+      _delay_ms(200);
       OCR1A = 0;
-      wait(300);
+      _delay_ms(200);
       OCR1A = 1023;
+
+      // Read the current time
+      getTime(&curTime);
+      lcd_gotoxy(0,0);
+      printTime(&curTime, 1);
     }
 }
