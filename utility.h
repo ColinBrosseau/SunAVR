@@ -77,6 +77,14 @@ inline void INIT_##IO_NAME()                                            \
     );                                                                  \
                                                                         \
     DDR##P_LTR = DDR##P_LTR & NMASK;                                    \
+}                                                                        \
+inline void PULLUP_##IO_NAME()                                            \
+{                                                                       \
+    uint8_t NMASK = (uint8_t)(                                          \
+        ~((0xFF >> (8-NUM_BITS)) << PIN_NO)                             \
+    );                                                                  \
+                                                                        \
+    PORT##P_LTR = PORT##P_LTR & NMASK;                                    \
 }
 
 #endif // #ifndef _UTILITY_H_

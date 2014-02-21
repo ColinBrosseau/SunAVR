@@ -38,8 +38,8 @@
 
 MAKE_OUTPUT(LIGHT, B, 1, 1) // PWM (actual light)
 
-//MAKE_OUTPUT(GND_CLOCK, C, 2, 1) // power of the clock
-//MAKE_OUTPUT(VCC_CLOCK, C, 3, 1) // power of the clock
+MAKE_INPUT(SELECT, C, 3, 1) // select button
+MAKE_INPUT(ENTER, C, 2, 1) // enter button
 
 #define delay_blink 250
 
@@ -50,6 +50,12 @@ TimeVal alarmTime1;
 TimeVal alarmTime2;
 
 char bufferLCD[6]; 
+
+// Get the seconds value at the last iteration
+uint8_t lastSec;
+
+unsigned short mode=0;
+unsigned short key;
 
 // Calculate OCR1A value given a duty cycle (percent) 
 int calculateOCR1Apercent(float intensity)
@@ -68,7 +74,11 @@ void setIO(void)
   TCCR1B |= (1 << CS11);
   // set prescaler to 8 and starts PWM
 
-  //INIT_LED();
+  INIT_SELECT();
+  INIT_ENTER();
+  //PULLUP_SELECT();
+  //PULLUP_ENTER();
+  PORTC |= 1 << PC2 | 1 << PC3; //temporary replacement for PULLUP_...
 }
 
 float expo(float x)
@@ -170,6 +180,21 @@ void printTime(TimeVal* time, int level){
 
 }
 
+unsigned short read_keys()
+{
+  unsigned short key = 0;
+
+  if (SELECT() == 0)
+    {
+      key = 1;
+    }
+  else if (ENTER() == 0)
+    {
+      key = 2;
+    }
+
+  return key;
+}
 
 int main(void)
 {
@@ -209,21 +234,74 @@ int main(void)
   // wait until the alarm time
   while ( waitAlarm(&alarmTime1) & waitAlarm(&alarmTime2) )
     {
-       _delay_ms(1000);
-       getTime(&curTime);
-       lcd_gotoxy(0,0);
-       printTime(&curTime, 1);
+      
+      // Get the seconds value at the last iteration
+      lastSec = curTime.sec;
+      
+      // Read the current time
+      getTime(&curTime);
+      
+      // Update the seconds count
+      if (curTime.sec != lastSec)
+	{
+	  getTime(&curTime);
+	  lcd_gotoxy(0,0);
+	  printTime(&curTime, 1);
+	  
+	  lcd_gotoxy(0,1);
+	  printTime(&alarmTime1, 0);
+	  printTime(&alarmTime2, 0);
+	}
+      
+      key = read_keys();
+      // If a key was pressed
+      if (key)
+	{
+	  OCR1A = 50;
+	  _delay_ms(50);
+	  OCR1A = 0;
+	  _delay_ms(250);
+	  // Add a debouncing delay
+	}
+      
+      /* lcd_gotoxy(0,1); */
+      /* if (key==0) */
+       /* 	 { */
+       /* 	   lcd_puts("00"); */
+       /* 	 } */
+       /* else if (key==1) */
+       /* 	 { */
+       /* 	   lcd_puts("10"); */
+       /* 	 } */
+       /* else if (key==2) */
+       /* 	 { */
+       /* 	   lcd_puts("01"); */
+       /* 	 } */
+       /* else if (key==3) */
+       /* 	 { */
+       /* 	   lcd_puts("11"); */
+       /* 	 } */
 
-       lcd_gotoxy(0,1);
-       printTime(&alarmTime1, 0);
-       printTime(&alarmTime2, 0);
+       /* lcd_puts(" "); */
+       /* itoa(key,bufferLCD,10); */
+       /* lcd_puts(bufferLCD); */
+       /* lcd_puts(" "); */
+
+       /* lcd_gotoxy(0,1); */
+       /* itoa(SELECT(),bufferLCD,10); */
+       /* lcd_puts(bufferLCD); */
+       /* lcd_puts(" "); */
+       
+       /* itoa(ENTER(),bufferLCD,10); */
+       /* lcd_puts(bufferLCD); */
+       /* lcd_puts(" "); */
+       
     }
 
   alarmActive = 1;
   
   OCR1A = 50;
   _delay_ms(50);
-
 
   unsigned int difference=0;
 
@@ -237,7 +315,7 @@ int main(void)
   while (alarmActive)
     {
       // Get the seconds value at the last iteration
-      uint8_t lastSec = curTime.sec;
+      lastSec = curTime.sec;
       
       // Read the current time
       getTime(&curTime);
