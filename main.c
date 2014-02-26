@@ -369,10 +369,11 @@ int main(void)
 
   while(1)
     {
+      //blink
       _delay_ms(200);
-      OCR1A = 0;
+      //      OCR1A = 0;
       _delay_ms(200);
-      OCR1A = 1023;
+      //      OCR1A = 1023;
 
       // Read the current time
       getTime(&curTime);
